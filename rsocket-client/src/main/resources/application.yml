@@ -1,0 +1,66 @@
+spring:
+  application:
+    name: rsocket-client
+
+  rsocket:
+    compression:
+      enabled: true
+    client:
+      transport: tcp
+      compressors:
+        gzip:
+          enabled: true
+    frame:
+      fragmentation:
+        enabled: true
+      max-payload-size: 26777215
+
+  codec:
+    max-in-memory-size: ${MAX_IN_MEMORY_SIZE:30MB}
+
+management:
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  endpoint:
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+    health:
+      show-details: always
+
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus
+  tracing:
+    enabled: true
+    propagation:
+      type: b3, b3_multi
+      consume: b3, b3_multi
+      produce: b3, b3_multi
+    sampling:
+      probability: ${ZIPKIN_TRACE_PROBABILITY:1.0}
+
+logging:
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
+  level:
+    root: ${LOG_LEVEL:INFO}
+    org:
+      springframework:
+        data:
+          mongodb:
+            core:
+              ReactiveMongoTemplate: INFO
+
+server:
+  port: ${PORT:3333}
+  compression:
+    enabled: true
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html

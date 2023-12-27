@@ -1,0 +1,78 @@
+server:
+  port: ${PORT:2222}
+  compression:
+    enabled: true
+
+spring:
+  main:
+    banner-mode: "off"
+  application:
+    name: rsocket-server
+  codec:
+    max-in-memory-size: ${MAX_IN_MEMORY_SIZE:20MB}
+
+  rsocket:
+    server:
+      port: 7003
+      transport: tcp
+      compressors:
+        gzip:
+          enabled: true
+    compression:
+      enabled: true
+    frame:
+      fragmentation:
+        enabled: true
+        max-payload-size: 10485760
+
+  r2dbc:
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:12345678}
+    url: ${DB_URL:r2dbc:mysql://localhost:3306/sample}
+    pool:
+      enabled: true
+      initial-size: ${INITIAL_SIZE:5}
+      max-size: ${MAX_SIZE:100}
+
+  sql:
+    init:
+      mode: never
+
+management:
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  endpoint:
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+    health:
+      show-details: ${HEALTH_DETAILS:always}
+
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus
+
+  tracing:
+    enabled: true
+    propagation:
+      type: b3, b3_multi
+      consume: b3, b3_multi
+      produce: b3, b3_multi
+    sampling:
+      probability: ${ZIPKIN_TRACE_PROBABILITY:1.0}
+
+logging:
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
+  level:
+    root: ${LOG_LEVEL:INFO}
+    org:
+      springframework:
+        data:
+          mongodb:
+            core:
+              ReactiveMongoTemplate: INFO
